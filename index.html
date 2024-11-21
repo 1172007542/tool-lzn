@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>空调维修明细</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://unpkg.com/docx@7.1.0/build/index.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+</head>
+<body>
+    <h1>空调维修明细</h1>
+    <div class="table-container">
+        <table id="repairTable">
+            <thead>
+                <tr>
+                    <th>序号</th>
+                    <th>日期</th>
+                    <th>维修场所</th>
+                    <th>维修事项</th>
+                    <th>数量</th>
+                    <th>单位</th>
+                    <th>单价</th>
+                    <th>总价</th>
+                    <th>操作</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- 这里的行将由JavaScript动态生成 -->
+            </tbody>
+            <tfoot>
+                <tr id="summaryRow">
+                    <td colspan="7">汇总</td>
+                    <td id="totalPrice">0.00</td>
+                    <td></td>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+    <div class="button-container">
+        <button id="addRow">添加行</button>
+        <button id="exportWord">导出为Word</button>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
