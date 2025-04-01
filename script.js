@@ -1,4 +1,5 @@
-
+const CACHE_KEY = "repairData";
+const CACHE_EXPIRATION = 1000 * 60 * 30;
 
 document.addEventListener("DOMContentLoaded", function () {
   const table = document
@@ -93,32 +94,42 @@ document.addEventListener("DOMContentLoaded", function () {
     totalPriceCell.textContent = totalPrice.toFixed(2);
   }
 
-    function saveTableData() {
-    const tableBody = document.getElementById("repairTable").querySelector("tbody");
-    const rows = tableBody.rows;
-    const data = [];
+function saveTableData() {
+  const tableBody = document.getElementById("repairTable").querySelector("tbody");
+  const rows = tableBody.rows;
+  const data = [];
 
-    for (let i = 0; i < rows.length; i++) {
-      const date = rows[i].cells[1].querySelector("input").value;
-      const repairSite = rows[i].cells[2].querySelector("input").value;
-      const repairItem = rows[i].cells[3].querySelector("input").value;
-      const quantity = rows[i].cells[4].querySelector("input").value;
-      const unit = rows[i].cells[5].querySelector("input").value;
-      const price = rows[i].cells[6].querySelector("input").value;
-
-      data.push({ date, repairSite, repairItem, quantity, unit, price });
-    }
-    localStorage.setItem("repairData", JSON.stringify(data));
+  for (let i = 0; i < rows.length; i++) {
+    const date = rows[i].cells[1].querySelector("input").value;
+    const repairSite = rows[i].cells[2].querySelector("input").value;
+    const repairItem = rows[i].cells[3].querySelector("input").value;
+    const quantity = rows[i].cells[4].querySelector("input").value;
+    const unit = rows[i].cells[5].querySelector("input").value;
+    const price = rows[i].cells[6].querySelector("input").value;
+    data.push({ date, repairSite, repairItem, quantity, unit, price });
   }
+
+  const cacheData = {
+    timestamp: new Date().getTime(),
+    tableData: data
+  };
+
+  localStorage.setItem(CACHE_KEY, JSON.stringify(cacheData));
+}
   
-  function loadTableData() {
-    const storedData = localStorage.getItem("repairData");
-    if (storedData) {
-      const data = JSON.parse(storedData);
-      // 清空现有表格内容（如果需要）
+// 加载数据前判断是否在有效期内
+function loadTableData() {
+  const cache = localStorage.getItem(CACHE_KEY);
+  if (cache) {
+    const cacheData = JSON.parse(cache);
+    const now = new Date().getTime();
+
+    // 判断数据是否已过期
+    if (now - cacheData.timestamp < CACHE_EXPIRATION) {
+      const data = cacheData.tableData;
       const tableBody = document.getElementById("repairTable").querySelector("tbody");
-      tableBody.innerHTML = "";
-      // 根据缓存数据重建行
+      tableBody.innerHTML = "";  // 清空现有表格内容
+
       data.forEach((rowData, index) => {
         createRow(index + 1, rowData.date);
         const currentRow = tableBody.rows[index];
@@ -127,14 +138,17 @@ document.addEventListener("DOMContentLoaded", function () {
         currentRow.cells[4].querySelector("input").value = rowData.quantity;
         currentRow.cells[5].querySelector("input").value = rowData.unit;
         currentRow.cells[6].querySelector("input").value = rowData.price;
-        // 计算当前行的总价
         const quantity = parseFloat(rowData.quantity) || 0;
         const price = parseFloat(rowData.price) || 0;
         currentRow.cells[7].textContent = (quantity * price).toFixed(2);
       });
       updateSummary();
+    } else {
+      // 数据过期，清空缓存
+      localStorage.removeItem(CACHE_KEY);
     }
   }
+}
   
   loadTableData();
 
