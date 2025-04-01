@@ -1,4 +1,49 @@
+function saveTableData() {
+  const tableBody = document.getElementById("repairTable").querySelector("tbody");
+  const rows = tableBody.rows;
+  const data = [];
+
+  for (let i = 0; i < rows.length; i++) {
+    const date = rows[i].cells[1].querySelector("input").value;
+    const repairSite = rows[i].cells[2].querySelector("input").value;
+    const repairItem = rows[i].cells[3].querySelector("input").value;
+    const quantity = rows[i].cells[4].querySelector("input").value;
+    const unit = rows[i].cells[5].querySelector("input").value;
+    const price = rows[i].cells[6].querySelector("input").value;
+
+    data.push({ date, repairSite, repairItem, quantity, unit, price });
+  }
+  localStorage.setItem("repairData", JSON.stringify(data));
+}
+
+function loadTableData() {
+  const storedData = localStorage.getItem("repairData");
+  if (storedData) {
+    const data = JSON.parse(storedData);
+    // 清空现有表格内容（如果需要）
+    const tableBody = document.getElementById("repairTable").querySelector("tbody");
+    tableBody.innerHTML = "";
+    // 根据缓存数据重建行
+    data.forEach((rowData, index) => {
+      createRow(index + 1, rowData.date);
+      const currentRow = tableBody.rows[index];
+      currentRow.cells[2].querySelector("input").value = rowData.repairSite;
+      currentRow.cells[3].querySelector("input").value = rowData.repairItem;
+      currentRow.cells[4].querySelector("input").value = rowData.quantity;
+      currentRow.cells[5].querySelector("input").value = rowData.unit;
+      currentRow.cells[6].querySelector("input").value = rowData.price;
+      // 计算当前行的总价
+      const quantity = parseFloat(rowData.quantity) || 0;
+      const price = parseFloat(rowData.price) || 0;
+      currentRow.cells[7].textContent = (quantity * price).toFixed(2);
+    });
+    updateSummary();
+  }
+}
+
 document.addEventListener("DOMContentLoaded", function () {
+  loadTableData();
+  
   const table = document
     .getElementById("repairTable")
     .getElementsByTagName("tbody")[0];
@@ -33,6 +78,7 @@ document.addEventListener("DOMContentLoaded", function () {
     const lastDateInput = lastRow.querySelector('input[type="date"]');
     const lastDateValue = lastDateInput ? lastDateInput.value : "";
     createRow(rowCount, lastDateValue);
+    saveTableData();
 
     // 滚动到新添加的行
     setTimeout(() => {
@@ -55,6 +101,7 @@ document.addEventListener("DOMContentLoaded", function () {
       const price = parseFloat(priceInput.value) || 0;
       totalCell.textContent = (quantity * price).toFixed(2);
       updateSummary();
+      saveTableData();
     }
 
     function deleteRow() {
@@ -62,6 +109,7 @@ document.addEventListener("DOMContentLoaded", function () {
         row.remove();
         updateRowNumbers();
         updateSummary();
+        saveTableData();
       } else {
         alert("至少保留一行数据");
       }
